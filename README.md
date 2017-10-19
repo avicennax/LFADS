@@ -2,16 +2,7 @@
 
 https://arxiv.org/pdf/1608.06315.pdf
 
-## TODO
+### Features missing/deviating from original paper:
 
-* Verify model structure **X**
-* Verify dimensions are correct end-to-end. **X**
-* Refactor to best practices.
-* Add dropout
-* Add KL schedule
-* (Optional) clip gradients.
-* Add L2 penalty for recurrent connections.
-
-
-## Questions
-* Dimension of prior?
+* Missing L2 penalty for recurrent portions of the generator.
+* Hidden state clipping only employed on generator and controller.
