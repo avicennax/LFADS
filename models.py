@@ -44,8 +44,8 @@ class LFADS(object):
             'g_forwards_cell': tf.nn.rnn_cell.GRUCell(self.encoder_hidden_dim),
         }
 
-    def __init__(self, neuron_dim, c_hidden_dim=5, factor_dim=3,
-        infered_input_dim=2, generator_dim=5, encoder_hidden_dim=3, dropout_keep_p=.9,
+    def __init__(self, neuron_dim, c_hidden_dim=32, factor_dim=3,
+        infered_input_dim=8, generator_dim=32, encoder_hidden_dim=16, dropout_keep_p=.9,
         kl_prior_var=0.1, state_clip_value=5):
         
         self.neuron_dim = neuron_dim
@@ -55,7 +55,7 @@ class LFADS(object):
         self.generator_dim = generator_dim
         self.encoder_hidden_dim = encoder_hidden_dim
 
-        self.dropout_keep_p = tf.constant(dropout_keep_p, tf.float32)
+        self.dropout_keep_p = tf.constant(dropout_keep_p, dtype=tf.float32, name='dropout_p')
 
         self.g_state = None
         self.c_state = None
@@ -184,7 +184,7 @@ class LFADS(object):
         """
         Generates initial state that can be used by static_rnn function.
         """
-        batch_size = xa[0].get_shape()[0].value
+        batch_size = tf.shape(xa[0])[0]
         init_states = tf.tile(state, [batch_size])
         return tf.reshape(init_states, [batch_size, self.encoder_hidden_dim])
 
@@ -265,8 +265,9 @@ class LFADS(object):
         Calculates KL divergence between standard MV Normal and
         a MV normal with mean: mu, and diagonal covariance: sigma.
         """
-        shape = sigma.get_shape()
-        bdim = shape[0].value
-        mu_dim = shape[1].value
+        shape = tf.shape(sigma)
+        bdim = shape[0]
+        mu_dim = shape[1]
         sigma = tf.reshape(sigma, [bdim, mu_dim, 1]) * tf.reshape(tf.eye(mu_dim), [1, mu_dim, mu_dim])
-        return 0.5 * (tf.trace(sigma) + tf.reduce_sum(mu*mu, axis=1) - tf.log(1e-8 + tf.matrix_determinant(sigma)) - mu_dim)
+        return 0.5 * (tf.trace(sigma) + tf.reduce_sum(mu*mu, axis=1) - tf.log(1e-8 + 
+            tf.matrix_determinant(sigma)) - tf.cast(mu_dim, tf.float32))
